@@ -1,0 +1,100 @@
+// Microdomain model refers to model variant that considers both ligand
+// and receptor interaction and endocytosis.
+
+// Author: Fiete Haack
+// Contributed: Kai Budde
+// Last edited: 2019/11/18
+
+
+// +++++++++++++++++++++++
+// ++++++ Constants ++++++
+// +++++++++++++++++++++++
+
+a:  6.022e23;  // Avogadro constant
+vm: 1.37e-14;  // Volume of membrane in (dm)^3  (=1L)
+
+// ++++++++++++++++++++++++++++++++++++
+// ++++++ initial species counts ++++++
+// ++++++++++++++++++++++++++++++++++++
+
+nR: 4000;  // Number of initial cell surface receptors
+nL: 2000;  // Number of extracellular ligands
+
+nRaft:     1;  // Number of initial lipid rafts
+nRinRaft:  0;  // Number of initial receptors in lipid rafts
+nLRinRaft: 0;  // Number of initial ligand-receptor-complexes in lipid rafts
+
+// ++++++++++++++++++++++++++++++++++++++
+// +++++ reaction rate coefficients +++++
+// ++++++++++++++++++++++++++++++++++++++
+
+ka: 2.16e6;  // L/mol/min // Association rate
+kd: 0.02;    // 1/min     // Dissociation rate
+
+ke_nonraft: 0.05;  // 1/min     // Internalization rate (outside of rafts)
+ke_raft:    0.05;  // 1/min     // Raft-associated internalization rate
+
+ksh: 1e9;    // L/mol/min     // Shuttling rate between lo and ld domains
+
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++ species definitions (number of attributes) +++++
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+M()[];		// Membrane
+R(); 		// Receptor
+L(); 		// Ligand
+LR();		// Ligand-Receptor-Complex
+E()[];		// Endosome
+Raft()[]; 	// Raft
+
+DummyRaft();	// Dummy species to calculate raft-associated endocytosis
+DummyNonRaft();	// Dummy species to calculate non raft-associated endocytosis
+
+// ++++++++++++++++++++++++++++
+// +++++ initial solution +++++
+// ++++++++++++++++++++++++++++
+
+>>INIT[
+ M[
+   nL L + 
+   nR R + 
+   0 LR + 
+   nRaft Raft[nRinRaft R + nLRinRaft LR]
+  ] +
+ 1 E[0 LR] +
+ 0 DummyRaft +
+ 0 DummyNonRaft
+];
+
+// +++++++++++++++++++++++++++++++
+// +++++ reaction rules ++++++++++
+// +++++++++++++++++++++++++++++++
+
+// +++++++++++++++ Raft shuttling ++++++++++++++++
+
+// R1/R2: Shuttling of receptor into (out of) Lipid Raft
+M[Raft[sr?] + R:r + sm?]         -> M[Raft[R + sr?] + sm?]  @ #r * ksh         / (a*vm*0.7);
+M[Raft[R:r + sr?] + sm?]         -> M[Raft[sr?] + R + sm?]  @ #r * ksh * nRaft / (a*vm*0.3);
+
+// R3/R4: Shuttling of ligand receptor complex into (out of) Lipid Raft
+M[Raft[sr?] + LR:r + sm?]        -> M[Raft[LR + sr?] + sm?] @ #r * ksh          / (a*vm*0.7);
+M[Raft[LR:r + sr?] + sm?]        -> M[Raft[sr?] + LR + sm?] @ #r * ksh  * nRaft / (a*vm*0.3);
+
+// +++++++++++++++ Raft associated processes ++++++++++++++++
+
+// R5/R6: (Un)Binding of ligand to receptor in lipid raft (ligand concentration is constant)
+M[Raft[R:r + s?] + L:l + sm?]    -> M[Raft[LR + s?] + L + sm?] @ #r * #l  * ka * nRaft /(a*vm*0.3);
+M[Raft[LR:lr + s?] + sm?]        -> M[Raft[R + s?] + sm?]      @      #lr * kd;
+
+// R7: Internalization of ligand+receptor inside rafts
+M[Raft[LR:lr+sr?] + s?] + E[es?] -> M[Raft[sr?]+s?] + E[LR+es?]  + DummyRaft  @ #lr * ke_raft;
+
+// +++++++++++++++ Non-raft associated processes ++++++++++++++++
+
+// R8/R9: (Un)Binding of ligand to receptor in membrane (ligand concentration is constant)
+M[R:r + L:l + sm?] -> M[LR + L + sm?] @ #r * #l * ka / (a*vm*0.7);
+M[LR:l + sm?]      -> M[R + sm?]      @      #l * kd;
+
+// R10: Internalization of ligand+receptor outside of rafts
+M[LR:lr + s?] + E[se?]      -> M[s?] + E[LR+ se?] + DummyNonRaft  @ #lr * ke_nonraft;
