@@ -146,23 +146,18 @@ DummyNonRaft();
 // ********** Lipid Raft Dynamics *************** 
 
 // (1) Lrp6 diffusion into lipid rafts
-Cell[Membrane[LR[s?] + Lrp6(phos, bind):r + s_m?] + s_c?] ->
-Cell[Membrane[LR[Lrp6(phos, bind) + s?] + s_m?] + s_c?]
+LR[s?] + Lrp6(phos, bind):r -> LR[Lrp6(phos, bind) + s?]
 @ kLRAss * #r / (aa*vm*0.7); 
 
 // (2) Lrp6 diffusion out of lipid rafts
-Cell[Membrane[LR[Lrp6(phos, bind):r + s?] + s_m?] + s_c?] ->
-Cell[Membrane[LR[s?] + Lrp6(phos, bind) + s_m?] + s_c?]
+LR[Lrp6(phos, bind):r + s?] -> LR[s?] + Lrp6(phos, bind)
 @ kLRAss * #r * nLR / (aa*vm*0.3); 
 
 // (3) CK1y diffusion into lipid rafts
-Membrane[LR[s?] + CK1y:r + s_m?] ->
-Membrane[LR[CK1y + s?] + s_m?]
-@ kLRAss * #r / (aa*vm*0.7);
+LR[s?] + CK1y:r -> LR[CK1y + s?] @ kLRAss * #r / (aa*vm*0.7);
 
 // (4) CK1y diffusion out of lipid rafts
-Membrane[LR[CK1y:r + s?] + s_m?] -> Membrane[LR[s?] + CK1y + s_m?]
-@ kLRAss * #r * 0.1 * nLR / (aa*vm*0.3);
+LR[CK1y:r + s?] -> LR[s?] + CK1y @ kLRAss * #r * 0.1 * nLR / (aa*vm*0.3);
 
 // **** Membrane Signalling ****
 
@@ -187,12 +182,11 @@ Cell[Membrane[LR[Lrp6('uP', 'uB') + sl?] + sm?] + s?] /*+ Dkk*/
 @ kLDkkUnbind * #l;
 
 // (7) Phosphorylation of activated Lrp6 in LR
-Membrane[LR[CK1y:ck + Lrp6('uP','B'):l + s?] + s_m?] ->
-Membrane[LR[Lrp6('P', 'B') + CK1y + s?] + s_m?]
+LR[CK1y:ck + Lrp6('uP','B'):l + s?] -> LR[Lrp6('P', 'B') + CK1y + s?]
 @ rho * kLphos * #l * #ck;
 
 // (8) Dephosphorylation of Lrp6 
-Lrp6('P', 'B'):l -> Lrp6('uP', 'B') @ kLdephos*#l; 
+Lrp6('P', 'B'):l -> Lrp6('uP', 'B') @ kLdephos * #l;
 
 // **** Beta-catenin signalling **** 
 
@@ -206,10 +200,10 @@ Axin('u'):a -> Axin('p') @ kAAp * #a;
 Axin(x):a -> @ kAdeg * #a;
 
 // (12) Activated beta-catenin degradation 
-Cell()[Axin('p'):a + Bcat:b + s?] -> Cell()[Axin('p') + s?] @ kBetaDegAct * #a * #b;
+Axin('p'):a + Bcat:b -> Axin('p') @ kBetaDegAct * #a * #b;
 
 // (13) Beta-catenin synthesis
-Cell()[s?] -> Cell()[Bcat + s?] @ kBetaSyn;
+Cell[s?] -> Cell[Bcat + s?] @ kBetaSyn;
 
 // (14) Basal beta-catenin degradation
 Bcat:b -> @ kBetaDeg * #b;
@@ -226,8 +220,7 @@ Nuc[Bcat:b + s?] -> Nuc[Bcat + s?] + Axin('u') + AxinDummy @ kAsyn * #b;
 // **** Axin LRP6 signalling **** 
 
 // (18) Axin binding by LRP6 in membrane
-Cell[Axin(phos):a + Membrane[Lrp6('P', 'B'):l + s?] + s_c?] ->
-Cell[Membrane[Lrp6Axin(phos) + s?] + s_c?]
+Axin(phos):a + Membrane[Lrp6('P', 'B'):l + s?] -> Membrane[Lrp6Axin(phos) + s?]
 @ kLAxinBind * #l * #a;
 
 // (19) Axin binding by LRP6 in lipid rafts
@@ -235,21 +228,21 @@ Axin(phos):a + Membrane[LR[Lrp6('P','B'):l + s_lr?] + s?] ->
 Membrane[LR[Lrp6Axin(phos) + s_lr?] + s?] @ kLAxinBind * #l * #a;
 
 // (20) Dissociation of receptor/Axin complex (signalosome) in membrane
-Cell[Membrane[Lrp6Axin(phos):la + s_m?] + s?] -> 
-Cell[Membrane[Lrp6('uP', 'uB') + s_m?] + Axin(phos) + s?]
-@ kLAxinUnbind * #la; 
+Membrane[Lrp6Axin(phos):la + s_m?] ->
+Membrane[Lrp6('uP', 'uB') + s_m?] + Axin(phos)
+@ kLAxinUnbind * #la;
 
 // (21) Dissociation of receptor/Axin complex (signalosome) in LR
-Cell[Membrane[LR[Lrp6Axin(phos):la + s_lr?] + s_m?] + s?] -> 
-Cell[Membrane[LR[Lrp6('uP', 'uB') + s_lr?] + s_m?] + Axin(phos) + s?]
+Membrane[LR[Lrp6Axin(phos):la + s_lr?] + s_m?] ->
+Membrane[LR[Lrp6('uP', 'uB') + s_lr?] + s_m?] + Axin(phos)
 @ kLAxinUnbind * #la; 
 
 // (22) LRP6Axin into Endosome
-Cell[Membrane[LR[Lrp6Axin(phos):rec + s_l?] + s_m?] + Endosome[s_e?] + s?] -> 
-Cell[Membrane[LR[s_l?] + s_m?] + Endosome[Lrp6Axin(phos) + Lrp6Dummy + s_e?] + DummyRaft + s?]
+Membrane[LR[Lrp6Axin(phos):rec + s_l?] + s_m?] + Endosome[s_e?] -> 
+Membrane[LR[s_l?] + s_m?] + Endosome[Lrp6Axin(phos) + Lrp6Dummy + s_e?] + DummyRaft
 @ ke_raft * #rec;  
 
 // (23) LRP6 into Endosome
-Cell[Membrane[Lrp6('uP', 'B'):rec + s_m?] + Endosome[s_e?] + s?]->
-Cell[Membrane[s_m?] + Endosome[Lrp6('uP', 'B') + Lrp6Dummy + s_e?] + DummyNonRaft + s?]
+Membrane[Lrp6('uP', 'B'):rec + s_m?] + Endosome[s_e?] ->
+Membrane[s_m?] + Endosome[Lrp6('uP', 'B') + Lrp6Dummy + s_e?] + DummyNonRaft
 @ ke_nonraft * #rec;

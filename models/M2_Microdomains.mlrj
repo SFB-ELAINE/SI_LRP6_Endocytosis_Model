@@ -74,21 +74,21 @@ DummyNonRaft();	// Dummy species to calculate non raft-associated endocytosis
 // +++++++++++++++ Raft shuttling ++++++++++++++++
 
 // R1/R2: Shuttling of receptor into (out of) Lipid Raft
-M[Raft[sr?] + R:r + sm?]         -> M[Raft[R + sr?] + sm?]  @ #r * ksh         / (a*vm*0.7);
-M[Raft[R:r + sr?] + sm?]         -> M[Raft[sr?] + R + sm?]  @ #r * ksh * nRaft / (a*vm*0.3);
+Raft[sr?] + R:r         -> Raft[R + sr?]  @ #r * ksh         / (a*vm*0.7);
+Raft[R:r + sr?]         -> Raft[sr?] + R  @ #r * ksh * nRaft / (a*vm*0.3);
 
 // R3/R4: Shuttling of ligand receptor complex into (out of) Lipid Raft
-M[Raft[sr?] + LR:r + sm?]        -> M[Raft[LR + sr?] + sm?] @ #r * ksh          / (a*vm*0.7);
-M[Raft[LR:r + sr?] + sm?]        -> M[Raft[sr?] + LR + sm?] @ #r * ksh  * nRaft / (a*vm*0.3);
+Raft[sr?] + LR:r        -> Raft[LR + sr?] @ #r * ksh          / (a*vm*0.7);
+Raft[LR:r + sr?]        -> Raft[sr?] + LR @ #r * ksh  * nRaft / (a*vm*0.3);
 
 // +++++++++++++++ Raft associated processes ++++++++++++++++
 
 // R5/R6: (Un)Binding of ligand to receptor in lipid raft (ligand concentration is constant)
-M[Raft[R:r + s?] + L:l + sm?]    -> M[Raft[LR + s?] + L + sm?] @ #r * #l  * ka * nRaft /(a*vm*0.3);
-M[Raft[LR:lr + s?] + sm?]        -> M[Raft[R + s?] + sm?]      @      #lr * kd;
+Raft[R:r + s?] + L:l    -> Raft[LR + s?] + L @ #r * #l  * ka * nRaft /(a*vm*0.3);
+Raft[LR:lr + s?]        -> Raft[R + s?]      @      #lr * kd;
 
 // R7: Internalization of ligand+receptor inside rafts
-M[Raft[LR:lr+sr?] + s?] + E[es?] -> M[Raft[sr?]+s?] + E[LR+es?]  + DummyRaft  @ #lr * ke_raft;
+M[Raft[LR:lr+sr?] + s?] + E[es?] -> M[Raft[sr?]+s?] + E[LR+es?] + DummyRaft @ #lr * ke_raft;
 
 // +++++++++++++++ Non-raft associated processes ++++++++++++++++
 
