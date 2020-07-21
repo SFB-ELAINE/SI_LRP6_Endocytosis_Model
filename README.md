@@ -1,5 +1,5 @@
 # SI_LRP6_Endocytosis_Model
-Supporting information for the paper by F. Haack, K. Budde, and A. M. Uhrmacher: "Exploring mechanistic and temporal regulation of LRP6 endocytosis in canonical WNT signaling", Journal of Cell Science (2020), doi: 10.1242/jcs.243675.
+Supporting information for the paper by F. Haack, K. Budde, and A. M. Uhrmacher: "[Exploring mechanistic and temporal regulation of LRP6 endocytosis in canonical WNT signaling](https://doi.org/10.1242/jcs.243675)", Journal of Cell Science (2020).
 
 ## General information
 This README briefly explains the content of the subdirectories and how to replicate all experiments and obtain the figures shown in the paper mentioned above.
