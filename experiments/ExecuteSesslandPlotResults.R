@@ -19,13 +19,11 @@ list_of_directories <- c(
   "M2_Microdomains_S02_C",
   "M2_Microdomains_S03_A",
   "M2_Microdomains_S03_B",
-  "M2_Microdomains_S03_C",
   "M3_Wnt_S04_A",
   "M3_Wnt_S04_B",
   "M3_Wnt_S04_C",
   "M3_Wnt_S05_A",
   "M3_Wnt_S05_B",
-  "M3_Wnt_S05_C",
   "M4_Dkk_S06_A",
   "M4_Dkk_S06_B"
 )

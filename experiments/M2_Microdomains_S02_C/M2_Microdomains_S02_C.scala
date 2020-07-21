@@ -17,7 +17,7 @@ execute {
     // coefficients
     set("ke_nonraft" <~ 0)
 
-    scan("ke_raft"   <~ (0.05, 0.075, 0.1))
+    scan("ke_raft" <~ (0.05, 0.075, 0.1))
 
     observe("R" ~ count("M/R"))
     observe("LR" ~ count("M/LR"))
