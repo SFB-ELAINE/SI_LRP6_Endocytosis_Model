@@ -7,16 +7,8 @@
 
 // Author: Fiete Haack
 // Contributed: Kai Budde
-// Last edited: 2020/01/03
+// Last edited: 2020/07/22
 
-/*
-compartment volumes:
-membrane:  0.137E-16 m3                 (V*A) = 0.825E10 (dm)^3/mol
-cytoplams: 8.73E-16 m3                  (V*A) = 5.255E9  (dm)^3/mol
-nucleus:   3.55E-16 m3                  (V*A) = 2.1378E9 (dm)^3/mol
-
-Avogadro constant A: 6.022E23 mol^(-1)
-*/
 
 // +++++++++++++++++++++++
 // ++++++ Constants ++++++
@@ -61,7 +53,6 @@ kLAxinUnbind:   3E-4;    // 1/min     // LRP6-Axin dissociation rate constant
 
 // Lipid Rafts
 kLRAss:         1e9;     // L/mol/min // Shuttling rate between lo and ld domains
-
 
 // ** Beta-Catenin signalling **
 
@@ -148,29 +139,29 @@ DummyNonRaft();
 
 // (1) Lrp6 diffusion into lipid rafts
 LR[s?] + Lrp6(phos, bind):r -> LR[Lrp6(phos, bind) + s?]
-@ kLRAss * #r / (aa*vm*0.7); 
+@ kLRAss * #r / (aa * vm * 0.7); 
 
 // (2) Lrp6 diffusion out of lipid rafts
 LR[Lrp6(phos, bind):r + s?] -> LR[s?] + Lrp6(phos, bind)
-@ kLRAss * #r * nLR / (aa*vm*0.3); 
+@ kLRAss * #r * nLR / (aa * vm * 0.3); 
 
 // (3) CK1y diffusion into lipid rafts
-LR[s?] + CK1y:r -> LR[CK1y + s?] @ kLRAss * #r / (aa*vm*0.7);
+LR[s?] + CK1y:r -> LR[CK1y + s?] @ kLRAss * #r / (aa * vm * 0.7);
 
 // (4) CK1y diffusion out of lipid rafts
-LR[CK1y:r + s?] -> LR[s?] + CK1y @ kLRAss * #r * 0.1 * nLR / (aa*vm*0.3);
+LR[CK1y:r + s?] -> LR[s?] + CK1y @ kLRAss * #r * 0.1 * nLR / (aa * vm * 0.3);
 
 // **** Membrane Signalling ****
 
 // (5a) Binding of Wnt to Lrp6 (representing Fz,Lrp6 receptor complex)
 Wnt:w + Cell[Membrane[Lrp6('uP', 'uB'):l + sm?] + s?] ->
 Cell[Membrane[Lrp6('uP', 'B') + sm?] + s?] + Wnt
-@ kLWntBind * #w * #l / (aa*vm*0.7);
+@ kLWntBind * #w * #l / (aa * vm * 0.7);
 
 // (5b) Binding of Wnt to Lrp6 in LR (representing Fz,Lrp6 receptor complex)
 Wnt:w + Cell[Membrane[LR[Lrp6('uP', 'uB'):l + sl?] + sm?] + s?] -> 
 Cell[Membrane[LR[Lrp6('uP', 'B') + sl?] + sm?] + s?] + Wnt
-@ kLWntBind * #w * #l * nLR / (aa*vm*0.3);
+@ kLWntBind * #w * #l * nLR / (aa * vm * 0.3);
 
 // (6a) Dissociation of Wnt from LRP6 (representing Fz, Lrp6 receptor complex)
 Cell[Membrane[Lrp6('uP', 'B'):l + sm?] + s?] ->

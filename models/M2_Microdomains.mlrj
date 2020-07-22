@@ -3,7 +3,7 @@
 
 // Author: Fiete Haack
 // Contributed: Kai Budde
-// Last edited: 2019/11/18
+// Last edited: 2020/07/22
 
 
 // +++++++++++++++++++++++
@@ -17,52 +17,52 @@ vm: 1.37e-14;  // Volume of membrane in (dm)^3  (=1L)
 // ++++++ initial species counts ++++++
 // ++++++++++++++++++++++++++++++++++++
 
-nR: 4000;  // Number of initial cell surface receptors
-nL: 2000;  // Number of extracellular ligands
+nLrp6:   4000; // Number of initial cell surface receptors
+nWnt:    2000; // Number of extracellular ligands
 
-nRaft:     1;  // Number of initial lipid rafts
-nRinRaft:  0;  // Number of initial receptors in lipid rafts
-nLRinRaft: 0;  // Number of initial ligand-receptor-complexes in lipid rafts
+nLR:        1; // Number of initial lipid rafts
+nLRP6inLR:  0; // Number of initial receptors in lipid rafts
 
 // ++++++++++++++++++++++++++++++++++++++
 // +++++ reaction rate coefficients +++++
 // ++++++++++++++++++++++++++++++++++++++
 
-ka: 2.16e6;  // L/mol/min // Association rate
-kd: 0.02;    // 1/min     // Dissociation rate
+kLWntBind: 2.16e6;  // L/mol/min // Association rate (ligand-receptor)
+kLWntUnbind: 0.02;    // 1/min     // Dissociation rate (ligand-receptor)
 
 ke_nonraft: 0.05;  // 1/min     // Internalization rate (outside of rafts)
 ke_raft:    0.05;  // 1/min     // Raft-associated internalization rate
 
-ksh: 1e9;    // L/mol/min     // Shuttling rate between lo and ld domains
-
+kLRAss: 1e9;    // L/mol/min     // Shuttling rate between lo and ld domains
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // +++++ species definitions (number of attributes) +++++
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-M()[];		// Membrane
-R(); 		// Receptor
-L(); 		// Ligand
-LR();		// Ligand-Receptor-Complex
-E()[];		// Endosome
-Raft()[]; 	// Raft
+Membrane()[];
+Endosome()[];
+LR()[];         // Lipid Raft
+Lrp6(string);   // Receptor (binding state: 'uB' = unbound , 'B' = bound = ligand-receptor complex)
+Wnt();          // Ligand
 
-DummyRaft();	// Dummy species to calculate raft-associated endocytosis
-DummyNonRaft();	// Dummy species to calculate non raft-associated endocytosis
+DummyRaft();    // Dummy species to calculate raft-associated endocytosis
+DummyNonRaft(); // Dummy species to calculate non raft-associated endocytosis
 
 // ++++++++++++++++++++++++++++
 // +++++ initial solution +++++
 // ++++++++++++++++++++++++++++
 
 >>INIT[
- M[
-   nL L + 
-   nR R + 
-   0 LR + 
-   nRaft Raft[nRinRaft R + nLRinRaft LR]
+ Membrane[
+   nWnt Wnt + 
+   nLrp6 Lrp6('uB') + 
+   0 Lrp6('B') + 
+   nLR LR[
+     nLRP6inLR Lrp6('uB') +
+     0 Lrp6('B')
+    ]
   ] +
- 1 E[0 LR] +
+ 1 Endosome[0 Lrp6('B')] +
  0 DummyRaft +
  0 DummyNonRaft
 ];
@@ -73,28 +73,28 @@ DummyNonRaft();	// Dummy species to calculate non raft-associated endocytosis
 
 // +++++++++++++++ Raft shuttling ++++++++++++++++
 
-// R1/R2: Shuttling of receptor into (out of) Lipid Raft
-Raft[sr?] + R:r         -> Raft[R + sr?]  @ #r * ksh         / (a*vm*0.7);
-Raft[R:r + sr?]         -> Raft[sr?] + R  @ #r * ksh * nRaft / (a*vm*0.3);
-
-// R3/R4: Shuttling of ligand receptor complex into (out of) Lipid Raft
-Raft[sr?] + LR:r        -> Raft[LR + sr?] @ #r * ksh          / (a*vm*0.7);
-Raft[LR:r + sr?]        -> Raft[sr?] + LR @ #r * ksh  * nRaft / (a*vm*0.3);
+// R1/R2/R3/R4: Shuttling of receptor / ligand-receptor complex into (out of) Lipid Raft
+LR[sr?] + Lrp6(x):l -> LR[Lrp6(x) + sr?]  @ #l * kLRAss       / (a * vm * 0.7);
+LR[Lrp6(x):l + sr?] -> LR[sr?] + Lrp6(x)  @ #l * kLRAss * nLR / (a * vm * 0.3);
 
 // +++++++++++++++ Raft associated processes ++++++++++++++++
 
 // R5/R6: (Un)Binding of ligand to receptor in lipid raft (ligand concentration is constant)
-Raft[R:r + s?] + L:l    -> Raft[LR + s?] + L @ #r * #l  * ka * nRaft /(a*vm*0.3);
-Raft[LR:lr + s?]        -> Raft[R + s?]      @      #lr * kd;
+LR[Lrp6('uB'):l + s?] + Wnt:w -> LR[Lrp6('B') + s?] + Wnt
+@ #l * #w * kLWntBind * nLR / (a * vm * 0.3);
+LR[Lrp6('B'):l + s?]          -> LR[Lrp6('uB') + s?] @ #l * kLWntUnbind;
 
-// R7: Internalization of ligand+receptor inside rafts
-M[Raft[LR:lr+sr?] + s?] + E[es?] -> M[Raft[sr?]+s?] + E[LR+es?] + DummyRaft @ #lr * ke_raft;
+// R7: Internalization of ligand-receptor complex inside of lipid rafts
+Membrane[LR[Lrp6('B'):l + sr?] + s?] + Endosome[es?] ->
+Membrane[LR[sr?] + s?] + Endosome[Lrp6('B') + es?] + DummyRaft @ #l * ke_raft;
 
 // +++++++++++++++ Non-raft associated processes ++++++++++++++++
 
 // R8/R9: (Un)Binding of ligand to receptor in membrane (ligand concentration is constant)
-M[R:r + L:l + sm?] -> M[LR + L + sm?] @ #r * #l * ka / (a*vm*0.7);
-M[LR:l + sm?]      -> M[R + sm?]      @      #l * kd;
+Membrane[Lrp6('uB'):l + Wnt:w + sm?] -> Membrane[Lrp6('B') + Wnt + sm?]
+@ #l * #w * kLWntBind / (a * vm * 0.7);
+Membrane[Lrp6('B'):l + sm?]          -> Membrane[Lrp6('uB') + sm?] @ #l * kLWntUnbind;
 
-// R10: Internalization of ligand+receptor outside of rafts
-M[LR:lr + s?] + E[se?]      -> M[s?] + E[LR+ se?] + DummyNonRaft  @ #lr * ke_nonraft;
+// R10: Internalization of ligand-receptor complex outside of rafts
+Membrane[Lrp6('B'):l + s?] + Endosome[se?] ->
+Membrane[s?] + Endosome[Lrp6('B') + se?] + DummyNonRaft  @ #l * ke_nonraft;
