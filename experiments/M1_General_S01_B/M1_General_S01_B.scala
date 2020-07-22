@@ -16,15 +16,15 @@ execute {
     // Set initial species count as well as experiment specific reaction rate
     // coefficients
     set(
-      "nR"   <~ 4000,
-      "nL"   <~ 2000
+      "nLrp6"  <~ 4000,
+      "nWnt"   <~ 2000
     )
 
     scan("ke" <~ (0.05, 0.075, 0.1))
 
-    observe("LR" ~ count("M/LR"))
-    observe("R" ~ count("M/R"))
-    observe("ELR" ~ count("E/LR"))
+    observe("R"   ~ count("Membrane/Lrp6(uB)"))
+    observe("LR"  ~ count("Membrane/Lrp6(B)"))
+    observe("ELR" ~ count("Endosome/Lrp6(B)"))
 
     observeAt(range(0, 1, stoppingTime))
 

@@ -2,7 +2,7 @@
 # Script for producing the plots seen in the paper
 # Authors:      Kai Budde, Fiete Haack
 # Created:      2019-07-04
-# Last changed: 2020-01-06
+# Last changed: 2020-07-22
 # Used version of Sessl2R: 0.1.3
 #--------------------------------------------------------------------------#
 

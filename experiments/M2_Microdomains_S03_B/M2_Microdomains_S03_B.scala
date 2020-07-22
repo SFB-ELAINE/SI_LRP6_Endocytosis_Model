@@ -19,11 +19,11 @@ execute {
     scan("ke_raft" <~ (0.05, 0.075, 0.1))
     scan("ke_nonraft" <~ (0.05, 0.075, 0.1))
 
-    observe("R" ~ count("M/R"))
-    observe("LR" ~ count("M/LR"))
-    observe("RaftLR" ~ count("M/Raft/LR"))
-    observe("RaftR" ~ count("M/Raft/R"))
-    observe("ELR" ~ count("E/LR"))
+    observe("R"      ~ count("Membrane/Lrp6(uB)"))
+    observe("LR"     ~ count("Membrane/Lrp6(B)"))
+    observe("RaftR"  ~ count("Membrane/LR/Lrp6(uB)"))
+    observe("RaftLR" ~ count("Membrane/LR/Lrp6(B)"))
+    observe("ELR"    ~ count("Endosome/Lrp6(B)"))
     //observe("DummyNonRaft" ~ count("DummyNonRaft"))
     //observe("DummyRaft" ~ count("DummyRaft"))
     
